@@ -1,8 +1,4 @@
-export default function HighRiskTable() {
-  const data = [
-    { id: 201, name: "Robert", prob: 0.82 },
-    { id: 202, name: "Emma", prob: 0.76 },
-  ];
+export default function HighRiskTable({ data = [] }) {
 
   return (
     <div className="bg-white p-6 rounded-xl shadow">

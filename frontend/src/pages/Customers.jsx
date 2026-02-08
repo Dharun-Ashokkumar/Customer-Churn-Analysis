@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { predictBatch } from "../services/api";
+import { getCustomers, predictBatch } from "../services/api";
 import CustomerTable from "../components/tables/CustomerTable";
 
 export default function Customers() {
@@ -8,24 +8,8 @@ export default function Customers() {
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("All");
 
-  // Mock customer dataset
   useEffect(() => {
-    const mockData = Array.from({ length: 20 }).map((_, i) => ({
-      customer_id: i + 1,
-      avg_order_value: 300 + Math.random() * 300,
-      avg_delivery_time: 25 + Math.random() * 20,
-      avg_rating: 3 + Math.random() * 2,
-      discount_rate: Math.random(),
-      value_per_minute: 10 + Math.random() * 5,
-      rating_discount_interaction: Math.random() * 2,
-      avg_sentiment: Math.random(),
-      neg_review_ratio: Math.random() * 0.4,
-      churn_probability: null,
-      risk_level: null,
-    }));
-
-    setCustomers(mockData);
-    setFiltered(mockData);
+    getCustomers().then(setCustomers);
   }, []);
 
   // Search + Filter Logic
@@ -45,37 +29,39 @@ export default function Customers() {
     setFiltered(data);
   }, [search, riskFilter, customers]);
 
+  // OPTIONAL: Demo batch prediction
   const runBatchPrediction = async () => {
     try {
-      const res = await predictBatch(customers);
+      const results = await predictBatch(customers);
+
       const updated = customers.map((c) => {
-        const match = res.data.find(
+        const match = results.find(
           (r) => r.customer_id === c.customer_id
         );
-        return { ...c, ...match };
+        return match ? { ...c, ...match } : c;
       });
 
       setCustomers(updated);
     } catch (err) {
+      console.error(err);
       alert("Batch prediction failed");
     }
   };
 
   return (
     <div className="space-y-8">
-
       {/* HEADER */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-black">
           Customer Risk Analysis
         </h2>
 
-        <button
+        {/* <button
           onClick={runBatchPrediction}
           className="bg-blue-600 px-5 py-2 rounded-lg text-white hover:bg-blue-700 transition"
         >
           Run Batch Prediction
-        </button>
+        </button> */}
       </div>
 
       {/* SEARCH + FILTER */}

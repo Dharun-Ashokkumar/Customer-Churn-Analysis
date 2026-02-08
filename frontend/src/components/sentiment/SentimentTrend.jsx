@@ -8,16 +8,9 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const data = [
-  { month: "Jan", value: 55 },
-  { month: "Feb", value: 60 },
-  { month: "Mar", value: 58 },
-  { month: "Apr", value: 65 },
-  { month: "May", value: 70 },
-  { month: "Jun", value: 62 },
-];
 
-export default function SentimentTrend() {
+export default function SentimentTrend({data = [] }) {
+  if(!data.length) return null;
   return (
     <div className="bg-white p-6 rounded-xl shadow-md">
       <h3 className="text-lg font-semibold text-black mb-4">
@@ -43,7 +36,7 @@ export default function SentimentTrend() {
 
           <Line
             type="monotone"
-            dataKey="value"
+            dataKey="count"
             stroke="#22c55e"
             strokeWidth={3}
             dot={{ fill: "#22c55e" }}

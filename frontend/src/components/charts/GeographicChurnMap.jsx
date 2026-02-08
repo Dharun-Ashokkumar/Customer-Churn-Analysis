@@ -1,33 +1,91 @@
+import { useEffect, useState } from "react";
 import {
   ComposableMap,
   Geographies,
   Geography,
+  Marker,
 } from "react-simple-maps";
+import { getGeographicChurn } from "../../services/api";
 
+// 🌍 World map (we zoom into India)
 const geoUrl =
-  "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+  "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 export default function GeographicChurnMap() {
+  const [points, setPoints] = useState([]);
+
+  useEffect(() => {
+    getGeographicChurn().then((res = []) => {
+      const cleaned = res
+        .filter(
+          (d) =>
+            typeof d.lat === "number" &&
+            typeof d.lng === "number" &&
+            !Number.isNaN(d.lat) &&
+            !Number.isNaN(d.lng)
+        )
+        .map((d, idx) => ({
+          id: d.customer_id ?? idx,
+          coordinates: [d.lng, d.lat], // [lng, lat]
+          risk: Number(d.churn_probability) || 0,
+        }));
+
+      setPoints(cleaned);
+    });
+  }, []);
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-md">
       <h3 className="text-gray-700 font-semibold mb-4">
-        Geographic Churn Map
+        Geographic Churn Map (India)
       </h3>
 
-      <ComposableMap projection="geoAlbersUsa">
-        <Geographies geography={geoUrl}>
-          {({ geographies }) =>
-            geographies.map((geo) => (
-              <Geography
-                key={geo.rsmKey}
-                geography={geo}
-                fill="#93c5fd"
-                stroke="#FFF"
+      {/* 🔥 LARGE MAP CONTAINER */}
+      <div className="w-full h-[500px]">
+        <ComposableMap
+          projection="geoMercator"
+          projectionConfig={{
+            center: [78.9629, 22.5937], // 🇮🇳 India center
+            scale: 900,                // 🔍 Zoom level (bigger = more zoom)
+          }}
+          width={800}
+          height={500}
+          style={{ width: "100%", height: "100%" }}
+        >
+          {/* MAP LAYER */}
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill="#e5e7eb"
+                  stroke="#ffffff"
+                  strokeWidth={0.5}
+                />
+              ))
+            }
+          </Geographies>
+
+          {/* MARKERS */}
+          {points.map((p) => (
+            <Marker key={p.id} coordinates={p.coordinates}>
+              <circle
+                r={5}
+                fill={
+                  p.risk > 0.6
+                    ? "#ef4444"
+                    : p.risk > 0.3
+                    ? "#f59e0b"
+                    : "#22c55e"
+                }
+                stroke="#ffffff"
+                strokeWidth={0.8}
               />
-            ))
-          }
-        </Geographies>
-      </ComposableMap>
+            </Marker>
+          ))}
+        </ComposableMap>
+      </div>
     </div>
   );
 }

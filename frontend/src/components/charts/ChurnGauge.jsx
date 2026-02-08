@@ -1,7 +1,10 @@
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 
-export default function ChurnGauge({ value = 0.65 }) {
-  const data = [{ name: "Churn", value: value * 100 }];
+export default function ChurnGauge({ value }) {
+  const percent = Math.round((value ?? 0) * 100);
+
+  const data = [{ name: "Churn", value: percent }];
+
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md">
@@ -20,13 +23,13 @@ export default function ChurnGauge({ value = 0.65 }) {
             background
             clockWise
             dataKey="value"
-            fill="#22c55e"
+            fill={percent > 60 ? "#ef4444" : percent > 30 ? "#f59e0b" : "#22c55e"}
           />
         </RadialBarChart>
       </ResponsiveContainer>
 
       <div className="text-center text-xl font-bold text-gray-800">
-        {Math.round(value * 100)}%
+        {percent}%
       </div>
     </div>
   );

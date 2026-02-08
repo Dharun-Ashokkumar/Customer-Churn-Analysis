@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-import { predictChurn } from "../services/api";
-import { motion } from "framer-motion";
+import {
+  getStats,
+  getChurnDistribution,
+  getChurnSegments,
+  getChurnTrend,
+  getGeographicChurn,
+} from "../services/api";
 
 import KpiSummary from "../components/kpi/KpiSummary";
 import ChurnGauge from "../components/charts/ChurnGauge";
@@ -9,64 +14,64 @@ import ChurnTrend from "../components/charts/ChurnTrend";
 import RiskDistribution from "../components/charts/RiskDistribution";
 import SegmentScatter from "../components/charts/SegmentScatter";
 import GeographicChurnMap from "../components/charts/GeographicChurnMap";
+import Recommendations from "../components/recommendation/Recommendations";
 
 export default function Dashboard() {
-  const [result, setResult] = useState(null);
-
-  // Default mock input for auto prediction
-  const autoInput = {
-    avg_order_value: 450,
-    avg_delivery_time: 32,
-    avg_rating: 4.5,
-    discount_rate: 0.3,
-    value_per_minute: 12,
-    rating_discount_interaction: 1.2,
-    avg_sentiment: 0.6,
-    neg_review_ratio: 0.15,
-  };
+  const [stats, setStats] = useState(null);
+  const [riskDist, setRiskDist] = useState([]);
+  const [segments, setSegments] = useState([]);
+  const [trend, setTrend] = useState([]);
+  const [geo, setGeo] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchPrediction() {
-      try {
-        const res = await predictChurn(autoInput);
-        setResult(res.data);
-      } catch (error) {
-        console.log("Backend error. Using fallback data.");
-        setResult({
-          churn_probability: 0.38,
-          risk_level: "Medium",
-          cluster_id: 1,
-        });
+    Promise.all([
+      getStats(),
+      getChurnDistribution(),
+      getChurnSegments(),
+      getChurnTrend(),
+      getGeographicChurn(),
+    ]).then(
+      ([statsRes, distRes, segmentRes, trendRes, geoRes]) => {
+        setStats(statsRes);
+        setRiskDist(distRes);
+        setSegments(segmentRes);
+        setTrend(trendRes);
+        setGeo(geoRes);
+        setLoading(false);
       }
-    }
-
-    fetchPrediction();
+    );
   }, []);
 
-  if (!result) return null;
+  if (loading) {
+    return (
+      <div className="p-6 text-gray-500 text-sm">
+        Loading dashboard…
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <KpiSummary result={result} />
-      </motion.div>
+      {/* KPI SUMMARY */}
+      <KpiSummary result={stats} />
 
+      {/* GAUGE + DONUT */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <ChurnGauge value={result.churn_probability} />
-        <ChurnDonut value={result.churn_probability} />
+        <ChurnGauge value={stats.churn_rate / 100} />
+        <ChurnDonut value={stats.churn_rate / 100} />
       </div>
 
+      {/* RISK + SEGMENTS */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <RiskDistribution riskLevel={result.risk_level} />
-        <SegmentScatter />
+        <RiskDistribution data={riskDist} />
+        <SegmentScatter data={segments} />
       </div>
 
-      <ChurnTrend />
-      <GeographicChurnMap />
+      {/* TREND + MAP */}
+      <ChurnTrend data={trend} />
+      <GeographicChurnMap data={geo} />
+      <Recommendations riskLevel={riskDist.risk_level} />
     </div>
   );
 }

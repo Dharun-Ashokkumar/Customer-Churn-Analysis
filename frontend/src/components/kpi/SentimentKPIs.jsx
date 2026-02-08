@@ -1,17 +1,19 @@
-export default function SentimentKPIs() {
-  const data = [
-    { title: "Total Feedback", value: "10,482" },
-    { title: "Positive", value: "62%" },
-    { title: "Neutral", value: "25%" },
-    { title: "Negative", value: "13%" },
+export default function SentimentKPIs({ data }) {
+  if (!data) return null;
+
+  const cards = [
+    { title: "Total Feedback", value: data.totalFeedback },
+    { title: "Positive", value: `${data.positive}%` },
+    { title: "Neutral", value: `${data.neutral}%` },
+    { title: "Negative", value: `${data.negative}%` },
   ];
 
   return (
-    <div className="grid md:grid-cols-4 gap-6">
-      {data.map((item, index) => (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {cards.map((item, index) => (
         <div
           key={index}
-          className="bg-gray-100 rounded-2xl shadow-md p-6"
+          className="bg-white rounded-2xl shadow-md p-6"
         >
           <h4 className="text-gray-500 text-sm font-medium mb-2">
             {item.title}

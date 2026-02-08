@@ -7,26 +7,31 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { risk: "Low", value: 40 },
-  { risk: "Medium", value: 35 },
-  { risk: "High", value: 25 },
-];
+export default function RiskDistribution({ data = [] }) {
 
-export default function RiskDistribution() {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-md">
+        <p className="text-gray-500 text-sm">
+          No risk distribution data available
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-md">
       <h3 className="text-gray-700 font-semibold mb-4">
         Risk Distribution
       </h3>
 
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={260}>
         <BarChart data={data}>
-          <XAxis dataKey="risk" />
+          <XAxis dataKey="bucket" />
           <YAxis />
           <Tooltip />
           <Bar
-            dataKey="value"
+            dataKey="count"
             fill="#3b82f6"
             radius={[6, 6, 0, 0]}
             animationDuration={1000}
