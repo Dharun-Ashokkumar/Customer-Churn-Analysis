@@ -25,10 +25,6 @@ export default function Analytics() {
     getSentimentTrend().then(setTrend);
     getSentimentChannels().then(setChannels);
     getWordFrequency().then(setWords);
-    getSentimentChannels().then((res) => {
-    console.log("CHANNEL DATA:", res);
-    setChannels(res);
-  });
   }, []);
 
   // 🔒 Prevent render until data is ready
