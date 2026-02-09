@@ -45,8 +45,7 @@ export default function GeographicChurnMap() {
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
-            center: [78.9629, 22.5937], // 🇮🇳 India center
-            scale: 900,                // 🔍 Zoom level (bigger = more zoom)
+            scale: 150,                // 🔍 Zoom level (bigger = more zoom)
           }}
           width={800}
           height={500}
