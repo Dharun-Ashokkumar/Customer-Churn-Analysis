@@ -2,7 +2,7 @@ import pandas as pd
 import joblib
 from xgboost import XGBClassifier
 from xgboost.callback import EarlyStopping
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, roc_curve
 
 # ----------------------------------
 # LOAD PRECOMPUTED PIPELINE OUTPUTS
@@ -108,12 +108,46 @@ df["risk_level"] = df["churn_probability"].apply(map_risk)
 # EVALUATION
 # ----------------------------------
 
-auc = roc_auc_score(
-    y_test,
-    model.predict_proba(X_test)[:, 1]
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix
 )
 
-print("Retrained XGBoost AUC:", auc)
+# Predict probabilities
+y_prob = model.predict_proba(X_test)[:, 1]
+
+# Predict class labels
+fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+optimal_idx = (tpr - fpr).argmax()
+optimal_threshold = thresholds[optimal_idx]
+
+print("Optimal Threshold:", optimal_threshold)
+
+y_pred = (y_prob >= optimal_threshold).astype(int)
+
+# Calculate metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_prob)
+
+# Print results
+print("\nMODEL EVALUATION METRICS")
+print("------------------------")
+print(f"Accuracy  : {accuracy*100:.2f}%")
+print(f"Precision : {precision*100:.2f}%")
+print(f"Recall    : {recall*100:.2f}%")
+print(f"F1 Score  : {f1*100:.2f}%")
+print(f"ROC-AUC   : {auc*100:.2f}%")
+
+# Confusion matrix (optional but recommended)
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
 
 # ----------------------------------
 # SAVE MODEL + DATASET
