@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   getSentimentSummary,
@@ -15,6 +16,8 @@ import TopThemes from "../components/sentiment/TopThemes";
 import WordFrequency from "../components/sentiment/WordFrequency";
 
 export default function Analytics() {
+  const navigate = useNavigate();
+
   const [kpis, setKpis] = useState(null);
   const [trend, setTrend] = useState([]);
   const [channels, setChannels] = useState([]);
@@ -32,6 +35,20 @@ export default function Analytics() {
 
   return (
     <div className="space-y-10">
+      {/* ✅ TOP BUTTONS */}
+      <div className="flex gap-3">
+        <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold">
+          Analytics
+        </button>
+
+        <button
+          onClick={() => navigate("/sentiment")}
+          className="bg-white border px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100"
+        >
+          Sentiment Analysis
+        </button>
+      </div>
+
       {/* KPI Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

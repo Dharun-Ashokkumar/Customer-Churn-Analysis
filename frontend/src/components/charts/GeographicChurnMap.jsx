@@ -15,10 +15,8 @@ export default function GeographicChurnMap() {
   const [points, setPoints] = useState([]);
 
   useEffect(() => {
-    getGeographicChurn().then((res) => {
-      const data = res || [];
-
-      const cleaned = data
+    getGeographicChurn().then((res = []) => {
+      const cleaned = res
         .filter(
           (d) =>
             typeof d.lat === "number" &&
@@ -28,7 +26,7 @@ export default function GeographicChurnMap() {
         )
         .map((d, idx) => ({
           id: d.customer_id ?? idx,
-          coordinates: [d.lng, d.lat],
+          coordinates: [d.lng, d.lat], // [lng, lat]
           risk: Number(d.churn_probability) || 0,
         }));
 
@@ -39,7 +37,7 @@ export default function GeographicChurnMap() {
   return (
     <div className="bg-white p-6 rounded-xl shadow-md">
       <h3 className="text-gray-700 font-semibold mb-4">
-        Geographic Customer Churn Map
+        Geographic Churn Map (India)
       </h3>
 
       {/* 🔥 LARGE MAP CONTAINER */}
@@ -47,8 +45,8 @@ export default function GeographicChurnMap() {
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
-            scale: 120,
-            center: [20, 20],
+            center: [78.9629, 22.5937], // 🇮🇳 India center
+            scale: 900,                // 🔍 Zoom level (bigger = more zoom)
           }}
           width={800}
           height={500}
@@ -73,7 +71,7 @@ export default function GeographicChurnMap() {
           {points.map((p) => (
             <Marker key={p.id} coordinates={p.coordinates}>
               <circle
-                r={2.5} // Size of the marker
+                r={5}
                 fill={
                   p.risk > 0.6
                     ? "#ef4444"
