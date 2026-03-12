@@ -436,3 +436,84 @@ def get_settings():
 def update_settings(payload:dict):
     settings_store.update(payload)
     return {"status":"saved","settings":settings_store}
+# -----------------------------
+# PREDICTION HISTORY
+# -----------------------------
+@app.get("/predictions/history")
+def prediction_history():
+
+    query = text("""
+    SELECT
+        avg_order_value,
+        avg_delivery_time,
+        avg_rating,
+        churn_probability,
+        risk_level,
+        cluster_id
+    FROM predictions
+    ORDER BY id DESC
+    LIMIT 10
+    """)
+
+    with engine.connect() as conn:
+
+        result = conn.execute(query)
+
+        rows = [
+            dict(row._mapping)
+            for row in result
+        ]
+
+    return rows
+
+    # -----------------------------
+# REGISTER USER
+# -----------------------------
+@app.post("/auth/register")
+def register_user(payload: dict):
+
+    username = payload.get("username")
+    password = payload.get("password")
+
+    query = text("""
+    INSERT INTO users (username,password)
+    VALUES (:username,:password)
+    """)
+
+    with engine.connect() as conn:
+
+        conn.execute(query,{
+            "username":username,
+            "password":password
+        })
+
+        conn.commit()
+
+    return {"status":"user_created"}
+
+# -----------------------------
+# LOGIN USER
+# -----------------------------
+@app.post("/auth/login")
+def login_user(payload: dict):
+
+    username = payload.get("username")
+    password = payload.get("password")
+
+    query = text("""
+    SELECT * FROM users
+    WHERE username=:username
+    AND password=:password
+    """)
+
+    with engine.connect() as conn:
+
+        result = conn.execute(query,{
+            "username":username,
+            "password":password
+        }).fetchone()
+
+    if result:
+        return {"status":"success"}
+
+    return {"status":"invalid_credentials"}

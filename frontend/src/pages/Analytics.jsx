@@ -35,19 +35,8 @@ export default function Analytics() {
 
   return (
     <div className="space-y-10">
-      {/* ✅ TOP BUTTONS */}
-      <div className="flex gap-3">
-        <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold">
-          Analytics
-        </button>
-
-        <button
-          onClick={() => navigate("/sentiment")}
-          className="bg-white border px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100"
-        >
-          Sentiment Analysis
-        </button>
-      </div>
+    
+      
 
       {/* KPI Section */}
       <motion.div
