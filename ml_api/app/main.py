@@ -249,7 +249,7 @@ def get_all_customers():
 
     df["risk_level"] = pd.cut(
         df["churn_probability"],
-        bins=[0,0.3,0.6,1],
+        bins=[0,0.6,0.7,0.8],
         labels=["Low","Medium","High"]
     )
 
@@ -422,8 +422,8 @@ def explain_prediction(data: ChurnRequest):
 # SETTINGS
 # -----------------------------
 settings_store = {
-    "lowRisk":0.3,
-    "highRisk":0.6,
+    "lowRisk":0.6,
+    "highRisk":0.7,
     "emailAlerts":True,
     "weeklyReport":False
 }

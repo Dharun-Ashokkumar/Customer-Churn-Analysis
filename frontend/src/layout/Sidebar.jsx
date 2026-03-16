@@ -30,7 +30,7 @@ export default function Sidebar() {
 
         <NavLink to="/analytics" className={linkClass}>
           <BarChart2 size={18} />
-          Analytics
+          Feedback Analytics
         </NavLink>
 
         <NavLink to="/sentiment" className={linkClass}>

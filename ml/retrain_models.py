@@ -94,9 +94,9 @@ model.fit(
 df["churn_probability"] = model.predict_proba(X)[:, 1]
 
 def map_risk(p):
-    if p < 0.3:
+    if p < 0.6:
         return "Low"
-    elif p < 0.6:
+    elif p < 0.7:
         return "Medium"
     else:
         return "High"

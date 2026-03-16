@@ -28,9 +28,9 @@ def predict_churn_xgb(model, features):
     prob = float(model.predict_proba(features)[0][1])
 
     # risk label
-    if prob < 0.3:
+    if prob < 0.6:
         risk = "Low"
-    elif prob < 0.6:
+    elif prob < 0.7:
         risk = "Medium"
     else:
         risk = "High"

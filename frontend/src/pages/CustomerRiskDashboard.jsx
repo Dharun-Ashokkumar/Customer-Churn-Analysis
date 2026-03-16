@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   ResponsiveContainer,
   PieChart,
@@ -32,235 +33,158 @@ const tooltipStyle = {
 };
 
 export default function CustomerRiskDashboard() {
-  // 🔥 demo data (later api/dataset connect pannalam)
-  const gaugeSegments = useMemo(
-    () => [
-      { name: "Low", value: 25, color: "#083344" },
-      { name: "Med", value: 25, color: "#155e75" },
-      { name: "High", value: 25, color: "#0284c7" },
-      { name: "Critical", value: 25, color: "#7dd3fc" },
-    ],
-    []
-  );
 
-  const raaDist = useMemo(
-    () => [
-      { name: "Low", value: 22, color: "#7dd3fc" },
-      { name: "Medium", value: 38, color: "#38bdf8" },
-      { name: "High", value: 28, color: "#0284c7" },
-      { name: "Critical", value: 12, color: "#075985" },
-    ],
-    []
-  );
+  const [data, setData] = useState([]);
 
-  const strategies = useMemo(
-    () => [
-      { name: "Strategy 4", resolved: 7, inProgress: 4, new: 3 },
-      { name: "Strategy 3", resolved: 6, inProgress: 3, new: 4 },
-      { name: "Strategy 2", resolved: 5, inProgress: 5, new: 3 },
-      { name: "Strategy 1", resolved: 4, inProgress: 4, new: 6 },
-    ],
-    []
-  );
+  // 🔥 FETCH REAL DATA
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:8000/customers")
+      .then((res) => setData(res.data))
+      .catch((err) => console.error(err));
+  }, []);
 
-  const heat1 = useMemo(
-    () => [
-      [2, 3, 4, 4, 5],
-      [2, 2, 3, 4, 4],
-      [1, 2, 3, 3, 4],
-      [1, 1, 2, 3, 3],
-    ],
-    []
-  );
+  // 🔥 RISK COUNT
+  const riskCounts = {
+    Low: 0,
+    Medium: 0,
+    High: 0,
+  };
 
-  const heat2 = useMemo(
-    () => [
-      [1, 2, 3, 4, 4],
-      [1, 2, 2, 3, 4],
-      [1, 1, 2, 3, 3],
-      [1, 1, 2, 2, 3],
-    ],
-    []
-  );
+  data.forEach((d) => {
+    if (d.risk_level) {
+      riskCounts[d.risk_level]++;
+    }
+  });
 
-  const tableRows = useMemo(
-    () => [
-      { score: 16, area: "Ownership", activity: "Can legally form a business entity", who: "JP", when: "10/11" },
-      { score: 16, area: "Business", activity: "Ability to easily complete transactions", who: "HG", when: "12/11" },
-      { score: 15, area: "Cross border transactions", activity: "Frequent transactions across borders", who: "FD", when: "02/12" },
-      { score: 8, area: "Money laundering", activity: "Funds deposited into account at many locations", who: "RT", when: "06/12" },
-      { score: 8, area: "Cash transactions", activity: "Unrestricted deposits and withdrawals", who: "RT", when: "06/12" },
-    ],
-    []
-  );
+  // 🔥 PIE DATA
+  const raaDist = [
+    { name: "Low", value: riskCounts.Low, color: "#22c55e" },
+    { name: "Medium", value: riskCounts.Medium, color: "#f59e0b" },
+    { name: "High", value: riskCounts.High, color: "#ef4444" },
+  ];
 
-  // semicircle gauge effect: use PieChart with start/end angle
-  const gaugeNeedleAngle = 210; // just demo; later risk score -> angle compute
+  // 🔥 SIMPLE STRATEGY MOCK (can later connect backend)
+  const strategies = [
+    { name: "Low Risk", resolved: riskCounts.Low, inProgress: 2, new: 1 },
+    { name: "Medium Risk", resolved: riskCounts.Medium, inProgress: 3, new: 2 },
+    { name: "High Risk", resolved: riskCounts.High, inProgress: 4, new: 3 },
+  ];
 
   return (
     <div className="space-y-6">
+
       {/* TITLE */}
       <div>
-        <h1 className="text-3xl font-light text-slate-900">
-          Customer risk assessment dashboard reporting
+        <h1 className="text-3xl font-bold text-slate-900">
+          Customer Risk Dashboard
         </h1>
-        <p className="text-sm text-slate-500 mt-2 max-w-5xl">
-    
+        <p className="text-sm text-slate-500 mt-2">
+          Real-time churn risk analysis based on model predictions.
         </p>
-      </div>
-
-      {/* TOP BAR */}
-      <div className="bg-slate-100 rounded-xl px-4 py-3 border text-center font-semibold text-slate-700">
-        Customer risk dashboard
       </div>
 
       {/* GRID */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* LEFT COLUMN */}
+
+        {/* LEFT */}
         <div className="space-y-6">
-          {/* Gauge card */}
-          <Card title="Risk summary">
-            <div className="h-[220px]">
+
+          {/* PIE */}
+          <Card title="Risk Distribution">
+            <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={gaugeSegments}
-                    dataKey="value"
-                    startAngle={180}
-                    endAngle={0}
-                    innerRadius="65%"
-                    outerRadius="95%"
-                    paddingAngle={2}
-                  >
-                    {gaugeSegments.map((s, idx) => (
+                  <Pie data={raaDist} dataKey="value" innerRadius="50%" outerRadius="90%">
+                    {raaDist.map((s, idx) => (
                       <Cell key={idx} fill={s.color} />
                     ))}
                   </Pie>
-
-                  {/* Needle (simple) */}
-                  <g>
-                    <circle cx="50%" cy="72%" r="8" fill="#e5e7eb" stroke="#94a3b8" />
-                    <line
-                      x1="50%"
-                      y1="72%"
-                      x2="78%"
-                      y2="55%"
-                      stroke="#0f172a"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      transform="rotate(-35 200 160)"
-                    />
-                  </g>
+                  <Tooltip contentStyle={tooltipStyle} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </Card>
 
-          {/* Strategy bars */}
-          <Card title="Risk summary">
-            <div className="h-[220px]">
+          {/* BAR */}
+          <Card title="Risk Strategy Overview">
+            <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={strategies} layout="vertical" margin={{ left: 30, right: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: "#64748b", fontSize: 11 }} />
+                <BarChart data={strategies}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend />
-                  <Bar dataKey="resolved" stackId="a" fill="#0f172a" />
-                  <Bar dataKey="inProgress" stackId="a" fill="#1e40af" />
-                  <Bar dataKey="new" stackId="a" fill="#60a5fa" />
+                  <Bar dataKey="resolved" fill="#22c55e" />
+                  <Bar dataKey="inProgress" fill="#f59e0b" />
+                  <Bar dataKey="new" fill="#ef4444" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </Card>
+
         </div>
 
-        {/* RIGHT SIDE (2 columns wide) */}
+        {/* RIGHT */}
         <div className="xl:col-span-2">
-          <Card title="Risk profile & detail">
-            {/* MINI CHART ROW */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-              {/* Heat 1 */}
-              <div className="border rounded-xl p-3">
-                <div className="text-xs font-semibold text-slate-600 mb-2">Risk scoring</div>
-                <HeatGrid grid={heat1} />
-              </div>
 
-              {/* Heat 2 */}
-              <div className="border rounded-xl p-3">
-                <div className="text-xs font-semibold text-slate-600 mb-2">Score distribution</div>
-                <HeatGrid grid={heat2} />
-              </div>
+          <Card title="Top Risk Customers">
 
-              {/* Pie */}
-              <div className="border rounded-xl p-3">
-                <div className="text-xs font-semibold text-slate-600 mb-2">RAA distribution</div>
-                <div className="h-[140px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={raaDist} dataKey="value" innerRadius="50%" outerRadius="90%">
-                        {raaDist.map((s, idx) => (
-                          <Cell key={idx} fill={s.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={tooltipStyle} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-
-            {/* TABLE */}
-            <div className="mt-5 overflow-auto border rounded-xl">
+            <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead className="bg-sky-500 text-white">
+
+                <thead className="bg-slate-800 text-white">
                   <tr>
-                    <th className="p-3 text-left">Score</th>
-                    <th className="p-3 text-left">Area</th>
-                    <th className="p-3 text-left">Activity</th>
-                    <th className="p-3 text-left">Who</th>
-                    <th className="p-3 text-left">When</th>
+                    <th className="p-3 text-left">ID</th>
+                    <th className="p-3 text-left">Order Value</th>
+                    <th className="p-3 text-left">Rating</th>
+                    <th className="p-3 text-left">Churn %</th>
+                    <th className="p-3 text-left">Risk</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {tableRows.map((r, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-3">{r.score}</td>
-                      <td className="p-3">{r.area}</td>
-                      <td className="p-3">{r.activity}</td>
-                      <td className="p-3">{r.who}</td>
-                      <td className="p-3">{r.when}</td>
+                  {data.slice(0, 10).map((r, i) => (
+
+                    <tr key={i} className="border-b hover:bg-gray-50">
+
+                      <td className="p-3">{r.customer_id}</td>
+
+                      <td className="p-3">{r.avg_order_value}</td>
+
+                      <td className="p-3">{r.avg_rating}</td>
+
+                      <td className="p-3">
+                        {(r.churn_probability * 100).toFixed(0)}%
+                      </td>
+
+                      <td
+                        className={`p-3 font-semibold ${
+                          r.risk_level === "High"
+                            ? "text-red-500"
+                            : r.risk_level === "Medium"
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        {r.risk_level}
+                      </td>
+
                     </tr>
+
                   ))}
                 </tbody>
+
               </table>
             </div>
+
           </Card>
+
         </div>
+
       </div>
 
-      <div className="text-xs text-slate-400 text-center">
-        (Later backend/dataset connect panna data auto-change aagum)
-      </div>
-    </div>
-  );
-}
-
-function HeatGrid({ grid = [] }) {
-  const colors = ["#e0f2fe", "#bae6fd", "#7dd3fc", "#38bdf8", "#0ea5e9"];
-  return (
-    <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${grid?.[0]?.length || 5}, 1fr)` }}>
-      {grid.flat().map((v, i) => {
-        const idx = Math.max(0, Math.min(colors.length - 1, (v || 1) - 1));
-        return (
-          <div
-            key={i}
-            className="aspect-[2/1] rounded"
-            style={{ background: colors[idx] }}
-            title={`Score: ${v}`}
-          />
-        );
-      })}
     </div>
   );
 }

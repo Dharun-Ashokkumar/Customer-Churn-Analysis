@@ -46,7 +46,7 @@ export default function DashboardLayout() {
             }
           >
             <BarChart3 size={18} />
-            Analytics
+            FeedBack Analytics
           </NavLink>
 
           <NavLink
