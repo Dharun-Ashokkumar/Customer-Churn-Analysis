@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { getCustomers } from "../services/api"; 
 import {
   ResponsiveContainer,
   PieChart,
@@ -38,10 +38,9 @@ export default function CustomerRiskDashboard() {
 
   // 🔥 FETCH REAL DATA
   useEffect(() => {
-    axios
-      .get(`${API_BASE}/customers`)
-      .then((res) => setData(res.data))
-      .catch((err) => console.error(err));
+  getCustomers()
+    .then(setData)
+    .catch((err) => console.error(err));
   }, []);
 
   // 🔥 RISK COUNT
