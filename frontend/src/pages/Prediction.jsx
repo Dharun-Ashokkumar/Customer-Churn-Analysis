@@ -33,7 +33,7 @@ export default function Prediction() {
     try {
 
       const res = await axios.get(
-        "http://127.0.0.1:8000/predictions/history"
+        `${API_BASE}/predictions/history`
       );
 
       setHistory(res.data);
@@ -101,7 +101,7 @@ export default function Prediction() {
       setLoading(true);
 
       const res = await axios.post(
-        "http://127.0.0.1:8000/predict/churn",
+        `${API_BASE}/predict/churn`,
         formData
       );
 

@@ -14,9 +14,11 @@ export default function Login() {
 
     try {
 
+      const BASE_URL = import.meta.env.VITE_API_URL;
+
       const url = isRegister
-        ? "http://127.0.0.1:8000/auth/register"
-        : "http://127.0.0.1:8000/auth/login";
+        ? `${BASE_URL}/auth/register`
+        : `${BASE_URL}/auth/login`;
 
       const res = await axios.post(url,{
         username,

@@ -39,7 +39,7 @@ export default function CustomerRiskDashboard() {
   // 🔥 FETCH REAL DATA
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/customers")
+      .get(`${API_BASE}/customers`)
       .then((res) => setData(res.data))
       .catch((err) => console.error(err));
   }, []);
