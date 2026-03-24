@@ -18,10 +18,7 @@ app = FastAPI()
 # -----------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,6 +40,10 @@ def startup():
 
     analytics_df = get_analytics_data()
     kmeans, scaler, xgb_model = load_models()
+
+@app.get("/")
+def root():
+    return {"status": "API running"}
 
 # -----------------------------
 # STATS
