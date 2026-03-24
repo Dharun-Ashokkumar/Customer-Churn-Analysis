@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 
 # PostgreSQL connection
-DATABASE_URL = "postgresql://postgres:12345@localhost:5432/churn_db"
+DATABASE_URL = "postgresql://postgres:1234@localhost:5432/churn_db"
 
 engine = create_engine(
     DATABASE_URL,

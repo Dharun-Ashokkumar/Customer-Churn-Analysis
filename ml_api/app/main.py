@@ -30,6 +30,10 @@ app.add_middleware(
 analytics_df = None
 kmeans = scaler = xgb_model = None
 
+def get_analytics_data():
+    query = "SELECT * FROM analytics"
+    return pd.read_sql(query, engine)
+
 # -----------------------------
 # STARTUP
 # -----------------------------
@@ -37,7 +41,7 @@ kmeans = scaler = xgb_model = None
 def startup():
     global analytics_df, kmeans, scaler, xgb_model
 
-    analytics_df = pd.read_csv("ml/outputs/analytics_master.csv")
+    analytics_df = get_analytics_data()
     kmeans, scaler, xgb_model = load_models()
 
 # -----------------------------
@@ -45,8 +49,7 @@ def startup():
 # -----------------------------
 @app.get("/stats")
 def get_stats():
-
-    df = analytics_df
+    df = get_analytics_data()
 
     return {
         "total_customers": len(df),
@@ -129,17 +132,34 @@ def high_risk_customers():
 # -----------------------------
 @app.get("/churn/geography")
 def geo_churn():
+    from sqlalchemy import text
 
-    df = analytics_df
+    query = text("""
+        SELECT
+            customer_id,
+            lat,
+            lng,
+            churn_probability,
+            risk_level
+        FROM analytics
+        WHERE lat IS NOT NULL AND lng IS NOT NULL
+    """)
 
-    return df[[
-        "customer_id",
-        "lat",
-        "lng",
-        "region",
-        "churn_probability"
-    ]].to_dict("records")
+    with engine.connect() as conn:
+        result = conn.execute(query)
 
+        rows = [
+            {
+                "customer_id": row.customer_id,
+                "lat": float(row.lat),
+                "lng": float(row.lng),
+                "churn_probability": float(row.churn_probability),
+                "risk_level": row.risk_level
+            }
+            for row in result
+        ]
+
+    return rows
 # -----------------------------
 # CHURN TREND
 # -----------------------------
@@ -148,24 +168,26 @@ def churn_trend():
 
     df = analytics_df.copy()
 
-    if "date" not in df.columns:
+    # ✅ Ensure proper datetime
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
 
-        df["month"] = pd.qcut(
-            df.index,
-            q=6,
-            labels=["Jan","Feb","Mar","Apr","May","Jun"]
-        )
+    # ❗ Drop invalid dates
+    df = df.dropna(subset=["date"])
 
-    else:
+    # ✅ Sort by date
+    df = df.sort_values("date")
 
-        df["month"] = pd.to_datetime(df["date"]).dt.month_name()
-
-    return (
-        df.groupby("month")
-        .churn_probability.mean()
-        .reset_index(name="value")
-        .to_dict("records")
+    # ✅ Group by date (or month if needed)
+    trend = (
+        df.groupby(df["date"].dt.date)["churn_probability"]
+        .mean()
+        .reset_index()
     )
+
+    # ✅ Rename for frontend
+    trend.columns = ["date", "value"]
+
+    return trend.to_dict("records")
 
 # -----------------------------
 # SENTIMENT
